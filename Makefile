@@ -5,7 +5,7 @@ CFLAGS += -Wno-pointer-arith -Wno-unused-parameter -Wno-newline-eof -Wno-unused-
 CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
 CFLAGS := -ggdb3 -g
 
-LDFLAGS :=
+LDFLAGS := -lcjson
 
 ifeq ($(UNAME_S), Linux)
 	LDFLAGS += -lm

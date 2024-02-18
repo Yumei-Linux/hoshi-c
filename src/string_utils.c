@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "string_utils.h"
 #include "xmalloc.h"
@@ -18,4 +19,10 @@ char *strreserve(const char *s1) {
 
 int streql(const char *s1, const char *s2) {
     return !strcmp(s1, s2);
+}
+
+void strlower(char *s1) {
+    for (unsigned int i = 0; s1[i] != '\0'; ++i) {
+        s1[i] = tolower((unsigned char) s1[i]);
+    }
 }
