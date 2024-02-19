@@ -13,9 +13,11 @@
 #include "../logging.h"
 #include "../fs.h"
 #include "../secsystem.h"
+
 #include "../internal/ui.h"
 #include "../internal/builder.h"
 #include "../internal/merger.h"
+#include "../internal/query.h"
 
 struct Data {
     char *pkgname;
@@ -60,6 +62,13 @@ static inline void free_data(struct Data *data) {
 // TODO: Check if the package has been already installed
 // (and skip if so)
 static void build_and_merge(char *pkgname, bool interactive) {
+    if (!interactive && is_package_installed(pkgname)) {
+        warning("Skipping %s%s%s: %sPackage already installed%s", COLOR_GREEN,
+            pkgname, COLOR_RESET, COLOR_MAGENTA, COLOR_RESET);
+
+        return;
+    }
+
     char *metadata_path = get_pkg_metadata(pkgname);
 
     if (!file_exists(metadata_path))
