@@ -13,6 +13,7 @@
 #include "../logging.h"
 #include "../fs.h"
 #include "../secsystem.h"
+#include "../internal/merger.h"
 
 struct Data {
     char *pkgname;
@@ -143,10 +144,11 @@ static void merge_package(char *pkgname) {
 
     // perform actual merging
     const char *prefix = FS_HOSHI_PREFIX"/hoshi-formulas/dist";
-    char *formulas_command = xmalloc(strlen(prefix) + strlen(hoshi_filename) + 1);
-    sprintf(formulas_command, "%s/%s", prefix, hoshi_filename);
-    formulas_merger(formulas_command);
-    free(formulas_command);
+    char *hoshi_bundle = xmalloc(strlen(prefix) + strlen(hoshi_filename) + 2);
+    sprintf(hoshi_bundle, "%s/%s", prefix, hoshi_filename);
+    merge_hoshi_bundle(hoshi_bundle);
+    free(hoshi_filename);
+    free(hoshi_bundle);
 }
 
 static void build_from_source(const char *pkgname) {

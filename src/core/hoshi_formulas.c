@@ -7,16 +7,12 @@
 #include "../xmalloc.h"
 #include "../string_utils.h"
 
-#define DEFINE_CALL(name, path) \
-    void (name)(const char *command) { \
-        char *cmd = xmalloc(strsize(command) + strsize((path)) + 3); \
-        strcpy(cmd, (path)); \
-        strcat(cmd, " "); \
-        strcat(cmd, command); \
-        secsystem(cmd); \
-        free(cmd); \
-    }
-
-DEFINE_CALL(formulas_builder, BUILDER_PATH);
-DEFINE_CALL(formulas_merger, MERGER_PATH);
+void formulas_builder(const char *command) {
+    char *cmd = xmalloc(strsize(command) + strsize(BUILDER_PATH) + 3);
+    strcpy(cmd, BUILDER_PATH);
+    strcat(cmd, " ");
+    strcat(cmd, command);
+    secsystem(cmd);
+    free(cmd);
+}
 
