@@ -32,9 +32,11 @@ char *read_file(const char *filename) {
         exit(1);
     }
 
-    size_t cap = 1024;
+    size_t cap = 4096;
     char *content = xmalloc(cap);
     char line[100];
+
+    strcpy(content, "");
 
     while (fgets(line, sizeof(line), fp)) {
         size_t actual_content_len = strlen(content);

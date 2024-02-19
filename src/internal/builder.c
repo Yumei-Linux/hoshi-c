@@ -12,7 +12,7 @@
 
 #include "../core/hoshi_formulas.h"
 
-static void perform_downloads(const char *pkgname, const char *metadata) {
+void perform_build_downloads(const char *pkgname, const char *metadata) {
     info("Checking for pending downloads...");
 
     cJSON *json = cJSON_ParseWithLength(metadata, strlen(metadata));
@@ -70,7 +70,7 @@ void build_from_source(const char *pkgname) {
 
     printf("\n");
 
-    perform_downloads(pkgname, metadata_content);
+    perform_build_downloads(pkgname, metadata_content);
 
     info("Starting build process");
     formulas_builder(pkgname);
