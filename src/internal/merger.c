@@ -67,3 +67,32 @@ void merge_hoshi_bundle(const char *filename) {
     success("Okay, the package has been merged successfully");
 }
 
+void merge_by_pkgname(char *pkgname) {
+    char *hoshi_filename;
+    unsigned int i = 0;
+
+    for (char *token = strtok(pkgname, "/"); token != NULL; token = strtok(NULL, "/"), ++i) {
+        if (i == 1) {
+            size_t len = strlen(token) + strlen(".hoshi") + 1;
+            hoshi_filename = xmalloc(len);
+            snprintf(hoshi_filename, len, "%s.hoshi", token);
+        }
+    }
+
+    if (hoshi_filename == NULL) {
+        error("cannot process pkgname to obtain the %s.hoshi%s path? %s(it may be an allocation issue?)%s",
+            COLOR_BLUE, COLOR_RESET, COLOR_MAGENTA, COLOR_RESET);
+    }
+
+    const char *prefix = FS_HOSHI_PREFIX"/hoshi-formulas/dist";
+
+    size_t bundle_len = strlen(prefix) + strlen(hoshi_filename) + 2;
+    char *hoshi_bundle = xmalloc(bundle_len);
+    snprintf(hoshi_bundle, bundle_len, "%s/%s", prefix, hoshi_filename);
+
+    // perform actual merging
+    merge_hoshi_bundle(hoshi_bundle);
+
+    free(hoshi_bundle);
+    free(hoshi_filename);
+}
