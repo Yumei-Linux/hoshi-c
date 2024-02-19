@@ -60,10 +60,6 @@ void grab(struct Argument *arg) {
     if (data->is_binary == false) {
         build_from_source(data->pkgname);
         merge_by_pkgname((char*) data->pkgname);
-
-        // keeping dist files clean, note that this shouldn't
-        // be performed when doing a simple build, this time we're
-        // doing both build & merge, so no need to keep these
         silent_secsystem("rm -rf %s/*", FS_HOSHI_PREFIX"/hoshi-formulas/dist");
     }
     
