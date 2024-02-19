@@ -14,8 +14,9 @@
 #include "../config.h"
 
 static void install(const char *file, const char *dest) {
-    char buf[strlen(ROOTFS_PATH) + strlen(dest) + 2];
-    sprintf(buf, "%s/%s", ROOTFS_PATH, dest);
+    size_t len = strlen(ROOTFS_PATH) + strlen(dest) + 2;
+    char buf[len];
+    snprintf(buf, len, "%s/%s", ROOTFS_PATH, dest);
     printf("%s  ++%s %s -> %s\n", COLOR_GREEN, COLOR_RESET, file, buf);
     silent_secsystem("bash -c 'install -Dm755 %s %s >/dev/null 2>&1 || true'", file, buf);
 }
