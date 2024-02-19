@@ -44,7 +44,7 @@ static struct Data *recollect_data(struct Argument *arg) {
     }
 
     if (data->pkgname == NULL)
-        error("required positional argument: %s<pkgname>%s", COLOR_BLUE, COLOR_RESET);
+        error("required positional argument: %s<pkgname>%s", COLOR_GREEN, COLOR_RESET);
 
     return data;
 }

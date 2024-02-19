@@ -8,6 +8,7 @@
 
 #include "core/help.h"
 #include "core/grab.h"
+#include "core/build.h"
 
 static inline bool am_i_root(void) {
     return geteuid() == 0;
@@ -22,9 +23,11 @@ int main(int argc, char *argv[]) {
     if (!am_i_root() && !streql(action->action, "help"))
         error("please, note that %shoshi%s requires elevated privileges to work!", COLOR_GREEN, COLOR_RESET);
 
-    if (streql(action->action, "grab")) {
+    if (streql(action->action, "grab"))
         grab(action);
-    }
+
+    if (streql(action->action, "build"))
+        build(action);
 
     free_argument(action);
 
