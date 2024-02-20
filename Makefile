@@ -18,8 +18,8 @@ all: configuration dirs app
 
 configuration:
 	@echo "Showing configuration for building:"
-	@echo "  * LDFLAGS:\t$(LDFLAGS)"
-	@echo "  * CFLAGS:\t$(CFLAGS)"
+	@echo "  * LDFLAGS:   $(LDFLAGS)"
+	@echo "  * CFLAGS:    $(CFLAGS)"
 	@echo "---------------------------------------------------------------------------"
 
 dirs:
@@ -29,11 +29,11 @@ run: all
 	$(BIN)/$(APPNAME)
 
 app: $(OBJ)
-	@echo "BIN\t$(BIN)/$(APPNAME)"
+	@echo "BIN   $(BIN)/$(APPNAME)"
 	@$(CC) -o $(BIN)/$(APPNAME) $^ $(LDFLAGS)
 
 %.o: %.c
-	@echo "CC\t$<"
+	@echo "CC    $<"
 	@$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
