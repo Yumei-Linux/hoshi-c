@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -22,7 +21,7 @@ static void proceed_scaffolding(void) {
 
     secsystem("bash -c 'mkdir -p %s{%s,%s}'",
         "/var/lib/hoshi/",
-        "debug-chroot",
+        "debug-rootfs",
         "packages");
 
     success("Scaffolding has been done properly");
