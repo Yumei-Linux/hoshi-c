@@ -115,6 +115,8 @@ const char *format_argkind(enum FlagKind kind) {
             return "normal";
         case FLAG_BOOLEAN:
             return "boolean";
+        default:
+            return "<unknown>";
     }
 }
 

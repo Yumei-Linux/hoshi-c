@@ -1,15 +1,10 @@
-UNAME_S = $(shell uname -s)
-
 CFLAGS := -std=c11 -O3 -g -Wall -Wextra -Wpedantic -Wstrict-aliasing
-CFLAGS += -Wno-pointer-arith -Wno-unused-parameter -Wno-newline-eof -Wno-unused-parameter -Wno-gnu-statement-expression
-CFLAGS += -Wno-gnu-compound-literal-initializer -Wno-gnu-zero-variadic-macro-arguments
-CFLAGS := -ggdb3 -g
+CFLAGS += -Wno-pointer-arith -Wno-unused-parameter -Wno-unused-parameter
+
+# uncomment for debugging purposes
+# CFLAGS := -ggdb3 -g
 
 LDFLAGS := -lcjson
-
-ifeq ($(UNAME_S), Linux)
-	LDFLAGS += -lm
-endif
 
 SRC := $(wildcard src/**/*.c) $(wildcard src/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
 OBJ := $(SRC:.c=.o)
@@ -19,19 +14,27 @@ APPNAME := hoshi
 
 .PHONY: all clean
 
-all: dirs app
+all: configuration dirs app
+
+configuration:
+	@echo "Showing configuration for building:"
+	@echo "  * LDFLAGS:\t$(LDFLAGS)"
+	@echo "  * CFLAGS:\t$(CFLAGS)"
+	@echo "---------------------------------------------------------------------------"
 
 dirs:
-	mkdir -p $(BIN)
+	@mkdir -p $(BIN)
 
 run: all
 	$(BIN)/$(APPNAME)
 
 app: $(OBJ)
-	$(CC) -o $(BIN)/$(APPNAME) $^ $(LDFLAGS)
+	@echo "BIN\t$(BIN)/$(APPNAME)"
+	@$(CC) -o $(BIN)/$(APPNAME) $^ $(LDFLAGS)
 
 %.o: %.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	@echo "CC\t$<"
+	@$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -rf $(BIN) $(OBJ)

@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <strings.h>
 
 #include "fs.h"
 #include "xmalloc.h"
@@ -50,7 +51,7 @@ char *read_file(const char *filename) {
     }
 
     fclose(fp);
-    explicit_bzero(&line, sizeof(line));
+    bzero(&line, sizeof(line));
 
     return content;
 }

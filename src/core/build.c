@@ -52,17 +52,17 @@ void build(struct Argument *args) {
 
     build_from_source(data->pkgname);
 
-    char *built_hoshi_filename;
-    char *built_hoshi_path;
+    char *built_hoshi_filename = xmalloc(10);
+    char *built_hoshi_path = xmalloc(10);
     unsigned int i = 0;
 
     for (char *token = strtok(data->pkgname, "/"); token != NULL; token = strtok(NULL, "/"), ++i) {
         if (i == 1) {
-            built_hoshi_filename = xmalloc(strlen(token) + strlen(".hoshi") + 1);
+            built_hoshi_filename = xrealloc(built_hoshi_filename, strlen(token) + strlen(".hoshi") + 1);
             strcpy(built_hoshi_filename, token);
             strcat(built_hoshi_filename, ".hoshi");
             size_t path_len = strlen(FS_HOSHI_PREFIX) + strlen("/hoshi-formulas/dist/") + strlen(token) + strlen(".hoshi") + 1;
-            built_hoshi_path = xmalloc(path_len);
+            built_hoshi_path = xrealloc(built_hoshi_path, path_len);
             snprintf(built_hoshi_path, path_len, "%s/hoshi-formulas/dist/%s.hoshi", FS_HOSHI_PREFIX, token);
         }
     }
