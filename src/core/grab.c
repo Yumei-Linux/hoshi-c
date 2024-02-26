@@ -19,13 +19,49 @@
 #include "../internal/merger.h"
 #include "../internal/query.h"
 
+struct Packages {
+    size_t cap;
+    size_t len;
+    char **value;
+};
+
 struct Data {
+    struct Packages *packages;
     char *pkgname;
     bool is_binary;
 };
 
+static struct Packages *initialise_packages(void) {
+    struct Packages *packages = xmalloc(sizeof(struct Packages));
+
+    packages->len = 0;
+    packages->cap = 10;
+    packages->value = xmalloc(sizeof(char*) * packages->cap);
+
+    return packages;
+}
+
+static inline void push_package(struct Packages *packages, char *package) {
+    packages->value[packages->len++] = package;
+    if (packages->cap <= packages->len) {
+        packages->cap += 10;
+        packages->value = xrealloc(packages->value, sizeof(char*) * packages->cap);
+    }
+}
+
+static inline void free_packages(struct Packages *packages) {
+    for (size_t i = 0; i < packages->len; ++i) {
+        free(packages->value[i]);
+    }
+
+    free(packages->value);
+    free(packages);
+}
+
 static struct Data *recollect_data(struct Argument *arg) {
     struct Data *data = xmalloc(sizeof(struct Data));
+
+    data->packages = initialise_packages();
 
     for (unsigned int i = 0; i < arg->flags->len; ++i) {
         struct Flag *flag = arg->flags->value[i];
@@ -33,10 +69,8 @@ static struct Data *recollect_data(struct Argument *arg) {
         if (flag == NULL)
             error("%s[internal]%s cannot get a %sflag%s????", COLOR_YELLOW, COLOR_RESET, COLOR_BLUE, COLOR_RESET);
 
-        if (flag->kind == FLAG_POSITIONAL && data->pkgname == NULL) {
-            data->pkgname = xmalloc(strsize(flag->value) + 1);
-            strcpy(data->pkgname, flag->value);
-        }
+        if (flag->kind == FLAG_POSITIONAL)
+            push_package(data->packages, strreserve(flag->value));
 
         int is_flag_binary = (
             streql(flag->name, "-b") ||
@@ -48,14 +82,17 @@ static struct Data *recollect_data(struct Argument *arg) {
         }
     }
 
-    if (data->pkgname == NULL)
-        error("required positional argument: %s<pkgname>%s", COLOR_GREEN, COLOR_RESET);
+    if (data->packages->len == 0) {
+        error("required positional argument %s<pkgname...>%s",
+            COLOR_GREEN, COLOR_RESET);
+    }
 
     return data;
 }
 
 static inline void free_data(struct Data *data) {
     free(data->pkgname);
+    free(data->packages);
     free(data);
 }
 
@@ -125,16 +162,42 @@ static void build_and_merge(char *pkgname, bool interactive) {
 }
 
 static inline void cleanup(void) {
+    info("Cleaning the build cache");
     silent_secsystem("rm -rf %s/*", FS_HOSHI_PREFIX"/hoshi-formulas/dist");
+}
+
+static void show_packages_resume(struct Packages *packages) {
+    info("Showing information about the packages to install\n");
+
+    for (size_t i = 0; i < packages->len; ++i) {
+        present_pkg_metadata(packages->value[i]);
+    }
+
+    if (!ask("Would you like to build these packages? [Y/n] ")) {
+        warning("Sure, giving up...");
+        exit(0);
+    }
 }
 
 void grab(struct Argument *arg) {
     struct Data *data = recollect_data(arg);
 
-    if (data->is_binary == false) {
-        build_and_merge(data->pkgname, true);
+    if (data->is_binary == false && data->packages->len == 1) {
+        char *packagename = data->packages->value[1];
+        build_and_merge(packagename, true);
+        cleanup();
+        free_data(data);
+        return;
+    }
+
+    if (data->is_binary == false && data->packages->len > 1) {
+        show_packages_resume(data->packages);
+
+        for (size_t i = 0; i < data->packages->len; ++i)
+            build_and_merge(data->packages->value[i], false);
+
         cleanup();
     }
-    
+
     free_data(data);
 }

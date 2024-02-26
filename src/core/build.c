@@ -12,13 +12,49 @@
 #include "../fs.h"
 
 #include "../internal/builder.h"
+#include "../internal/ui.h"
 
-struct Data {
-    char *pkgname;
+struct Packages {
+    size_t cap;
+    size_t len;
+    char **value;
 };
 
-static struct Data *recollect_data(struct Argument *args) {
+struct Data {
+    struct Packages *packages;
+};
+
+static inline struct Packages *initialise_packages(void) {
+    struct Packages *packages = xmalloc(sizeof(struct Packages));
+
+    packages->len = 0;
+    packages->cap = 10;
+    packages->value = xmalloc(sizeof(char*) * packages->cap);
+
+    return packages;
+}
+
+static void push_package(struct Packages *packages, char *package) {
+    packages->value[packages->len++] = package;
+    if (packages->len >= packages->cap) {
+        packages->cap += 10;
+        packages->value = xrealloc(packages->value, sizeof(char*) * packages->cap);
+    }
+}
+
+static inline void free_packages(struct Packages *packages) {
+    for (unsigned int i = 0; i < packages->len; ++i) {
+        free(packages->value[i]);
+    }
+
+    free(packages->value);
+    free(packages);
+}
+
+static struct Data *collect_data(struct Argument *args) {
     struct Data *data = (struct Data*) xmalloc(sizeof(struct Data));
+
+    data->packages = initialise_packages();
 
     for (unsigned int i = 0; i < args->flags->len; ++i) {
         struct Flag *flag = args->flags->value[i];
@@ -28,13 +64,12 @@ static struct Data *recollect_data(struct Argument *args) {
                 COLOR_YELLOW, COLOR_RESET, COLOR_RED, COLOR_RESET);
         }
 
-        if (flag->kind == FLAG_POSITIONAL && data->pkgname == NULL) {
-            data->pkgname = xmalloc(strsize(flag->value) + 1);
-            strcpy(data->pkgname, flag->value);
+        if (flag->kind == FLAG_POSITIONAL) {
+            push_package(data->packages, strreserve(flag->value));
         }
     }
 
-    if (data->pkgname == NULL) {
+    if (data->packages->len == 0) {
         error("required positional argument: %s<pkgname>%s",
             COLOR_GREEN, COLOR_RESET);
     }
@@ -43,20 +78,35 @@ static struct Data *recollect_data(struct Argument *args) {
 }
 
 static inline void free_data(struct Data *data) {
-    free(data->pkgname);
+    free_packages(data->packages);
     free(data);
 }
 
-void build(struct Argument *args) {
-    struct Data *data = recollect_data(args);
+static inline void present_metadatas(struct Packages *packages) {
+    info("Showing information about the packages to build\n");
 
-    build_from_source(data->pkgname);
+    for (unsigned int i = 0; i < packages->len; ++i) {
+        present_pkg_metadata(packages->value[i]);
+        puts("");
+    }
+
+    if (!ask("Would you like to build these packages? [Y/n] ")) {
+        warning("Sure, giving up...");
+        exit(0);
+    }
+}
+
+static void build_single_package(char *packagename, bool interactive) {
+    char *original_packagename = strreserve(packagename);
+
+    build_from_source(original_packagename, interactive);
 
     char *built_hoshi_filename = xmalloc(10);
     char *built_hoshi_path = xmalloc(10);
+
     unsigned int i = 0;
 
-    for (char *token = strtok(data->pkgname, "/"); token != NULL; token = strtok(NULL, "/"), ++i) {
+    for (char *token = strtok(packagename, "/"); token != NULL; token = strtok(NULL, "/"), ++i) {
         if (i == 1) {
             built_hoshi_filename = xrealloc(built_hoshi_filename, strlen(token) + strlen(".hoshi") + 1);
             strcpy(built_hoshi_filename, token);
@@ -67,11 +117,35 @@ void build(struct Argument *args) {
         }
     }
 
-    silent_secsystem("bash -c 'test -d dist || mkdir dist ; mv %s ./dist'", built_hoshi_path);
+    silent_secsystem("bash -c 'test -d dist || mkdir dist ; mv %s ./dist'",
+        built_hoshi_path);
 
-    warning("Package has been saved at %s./dist/%s%s", COLOR_GREEN, built_hoshi_filename, COLOR_RESET);
+    warning("Package %s%s%s has been saved at %s./dist/%s%s",
+        COLOR_GREEN, original_packagename, COLOR_RESET,
+        COLOR_GREEN, built_hoshi_filename, COLOR_RESET);
 
     free(built_hoshi_filename);
     free(built_hoshi_path);
+    free(original_packagename);
+}
+
+void build(struct Argument *args) {
+    struct Data *data = collect_data(args);
+
+    // build single package interactively
+    if (data->packages->len == 1) {
+        build_single_package(data->packages->value[0], true);
+    }
+
+    // build multiple packages interactively
+    if (data->packages->len > 1) {
+        present_metadatas(data->packages);
+
+        for (unsigned int i = 0; i < data->packages->len; ++i) {
+            build_single_package(data->packages->value[i], false);
+        }
+    }
+
+    // free the data as how it should be always ;)
     free_data(data);
 }

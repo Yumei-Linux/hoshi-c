@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <cjson/cJSON.h>
 
 #include "builder.h"
@@ -50,7 +51,7 @@ void perform_build_downloads(const char *pkgname, const char *metadata) {
     success("Okay");
 }
 
-void build_from_source(const char *pkgname) {
+void build_from_source(const char *pkgname, bool interactive) {
     char *metadata_path = get_pkg_metadata(pkgname);
 
     if (file_exists(metadata_path) == false) {
@@ -59,16 +60,18 @@ void build_from_source(const char *pkgname) {
 
     char *metadata_content = read_file(metadata_path);
 
-    present_metadata(metadata_path, metadata_content);
+    if (interactive) {
+        present_metadata(metadata_path, metadata_content);
 
-    if (!ask("Would you like to build it? [Y/n] ")) {
-        warning("Sure, giving up...");
-        free(metadata_path);
-        free(metadata_content);
-        exit(0);
+        if (!ask("Would you like to build it? [Y/n] ")) {
+            warning("Sure, giving up...");
+            free(metadata_path);
+            free(metadata_content);
+            exit(0);
+        }
+
+        printf("\n");
     }
-
-    printf("\n");
 
     perform_build_downloads(pkgname, metadata_content);
 

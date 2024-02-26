@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <cjson/cJSON.h>
 
 #include "ui.h"
 
+#include "../fs.h"
 #include "../logging.h"
 #include "../xmalloc.h"
 
@@ -65,4 +67,14 @@ void present_metadata(const char *path, const char *metadata) {
     }
 
     cJSON_Delete(json);
+}
+
+void present_pkg_metadata(const char *packagename) {
+    char *path = get_pkg_metadata(packagename);
+    char *content = read_file(path);
+
+    present_metadata(path, content);
+
+    free(path);
+    free(content);
 }
