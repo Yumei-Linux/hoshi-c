@@ -18,45 +18,13 @@
 #include "../internal/builder.h"
 #include "../internal/merger.h"
 #include "../internal/query.h"
-
-struct Packages {
-    size_t cap;
-    size_t len;
-    char **value;
-};
+#include "../internal/packages.h"
 
 struct Data {
     struct Packages *packages;
     char *pkgname;
     bool is_binary;
 };
-
-static struct Packages *initialise_packages(void) {
-    struct Packages *packages = xmalloc(sizeof(struct Packages));
-
-    packages->len = 0;
-    packages->cap = 10;
-    packages->value = xmalloc(sizeof(char*) * packages->cap);
-
-    return packages;
-}
-
-static inline void push_package(struct Packages *packages, char *package) {
-    packages->value[packages->len++] = package;
-    if (packages->cap <= packages->len) {
-        packages->cap += 10;
-        packages->value = xrealloc(packages->value, sizeof(char*) * packages->cap);
-    }
-}
-
-static inline void free_packages(struct Packages *packages) {
-    for (size_t i = 0; i < packages->len; ++i) {
-        free(packages->value[i]);
-    }
-
-    free(packages->value);
-    free(packages);
-}
 
 static struct Data *recollect_data(struct Argument *arg) {
     struct Data *data = xmalloc(sizeof(struct Data));

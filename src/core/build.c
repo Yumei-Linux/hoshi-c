@@ -13,43 +13,11 @@
 
 #include "../internal/builder.h"
 #include "../internal/ui.h"
-
-struct Packages {
-    size_t cap;
-    size_t len;
-    char **value;
-};
+#include "../internal/packages.h"
 
 struct Data {
     struct Packages *packages;
 };
-
-static inline struct Packages *initialise_packages(void) {
-    struct Packages *packages = xmalloc(sizeof(struct Packages));
-
-    packages->len = 0;
-    packages->cap = 10;
-    packages->value = xmalloc(sizeof(char*) * packages->cap);
-
-    return packages;
-}
-
-static void push_package(struct Packages *packages, char *package) {
-    packages->value[packages->len++] = package;
-    if (packages->len >= packages->cap) {
-        packages->cap += 10;
-        packages->value = xrealloc(packages->value, sizeof(char*) * packages->cap);
-    }
-}
-
-static inline void free_packages(struct Packages *packages) {
-    for (unsigned int i = 0; i < packages->len; ++i) {
-        free(packages->value[i]);
-    }
-
-    free(packages->value);
-    free(packages);
-}
 
 static struct Data *collect_data(struct Argument *args) {
     struct Data *data = (struct Data*) xmalloc(sizeof(struct Data));

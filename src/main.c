@@ -9,6 +9,7 @@
 #include "core/help.h"
 #include "core/grab.h"
 #include "core/build.h"
+#include "core/genhoshi.h"
 #include "core/scaffold.h"
 
 static inline bool am_i_root(void) {
@@ -32,6 +33,9 @@ int main(int argc, char *argv[]) {
 
     if (streql(action->action, "scaffold"))
         scaffold(action);
+
+    if (streql(action->action, "genhoshi"))
+        genhoshi(action);
 
     free_argument(action);
 

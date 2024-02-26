@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,6 +13,13 @@ void formulas_builder(const char *command) {
     strcpy(cmd, BUILDER_PATH);
     strcat(cmd, " ");
     strcat(cmd, command);
+    secsystem(cmd);
+    free(cmd);
+}
+
+void formulas_register(const char *dirname, const char *flag) {
+    char *cmd = xmalloc(strlen(REGISTER_PATH) + strlen(dirname) + strlen(flag) + 4);
+    sprintf(cmd, "%s %s %s", REGISTER_PATH, dirname, flag);
     secsystem(cmd);
     free(cmd);
 }
